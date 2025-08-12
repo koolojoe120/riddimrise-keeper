@@ -28,15 +28,20 @@ jobs:
           yes | sdkmanager --licenses
           sdkmanager "platform-tools" "platforms;android-34" "build-tools;34.0.0"
 
-      - name: Install deps
+      - name: Install deps (Capacitor 7.4.2)
         run: |
           npm i
           npm i @capacitor/android@7.4.2
 
       - name: Generate/Sync Android project
         run: |
-          npx cap add android --skip-deps-check || true
+          # Add Android if not already present (no --skip-deps-check on v7)
+          if [ ! -d android ]; then
+            npx cap add android
+          fi
           npx cap sync android
+          # Make sure Gradle sees the SDK
+          echo "sdk.dir=$ANDROID_SDK_ROOT" > android/local.properties
           chmod +x android/gradlew
 
       - name: Build debug APK
