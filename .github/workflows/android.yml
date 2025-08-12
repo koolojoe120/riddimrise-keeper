@@ -1,15 +1,46 @@
 name: android-apk
-on: { push: { branches: [ "main" ] }, workflow_dispatch: {} }
+on:
+  push:
+    branches: [ "main" ]
+  workflow_dispatch:
+
 jobs:
   build:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+
       - uses: actions/setup-node@v4
-        with: { node-version: 20 }
-      - run: npm i
-      - run: npm i @capacitor/android@latest
-      - run: npx cap add android --skip-deps-check
-      - run: cd android && ./gradlew assembleDebug
-      - uses: actions/upload-artifact@v4
-        with: { name: riddimrise-keeper-debug-apk, path: android/app/build/outputs/apk/debug/app-debug.apk }
+        with:
+          node-version: 20
+
+      - name: Setup Java 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - name: Setup Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Install Android SDK components
+        run: |
+          sdkmanager "platform-tools" "platforms;android-34" "build-tools;34.0.0"
+          yes | sdkmanager --licenses
+
+      - name: Install deps & add Android
+        run: |
+          npm i
+          npm i @capacitor/android@latest
+          npx cap add android --skip-deps-check
+
+      - name: Build debug APK
+        run: |
+          cd android
+          ./gradlew assembleDebug
+
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: riddimrise-keeper-debug-apk
+          path: android/app/build/outputs/apk/debug/app-debug.apk
