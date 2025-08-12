@@ -31,7 +31,7 @@ jobs:
       - name: Install deps
         run: |
           npm i
-          npm i @capacitor/android@latest
+          npm i @capacitor/android@7.4.2
 
       - name: Generate/Sync Android project
         run: |
